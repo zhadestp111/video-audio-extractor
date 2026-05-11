@@ -1,0 +1,2413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频音频提取工具 - 专业版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+            margin-bottom: 30px;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.drag-over {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .video-section {
+            display: none;
+            margin-bottom: 30px;
+        }
+
+        .video-section.active {
+            display: block;
+        }
+
+        .video-container {
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        video {
+            width: 100%;
+            display: block;
+        }
+
+        .video-info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+        }
+
+        .info-item {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f2ff;
+            color: #667eea;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e8ebff;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(56, 239, 125, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+            color: white;
+        }
+
+        .btn-info:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 114, 255, 0.4);
+        }
+
+        .settings {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .settings h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .setting-label {
+            min-width: 150px;
+            color: #666;
+        }
+
+        .setting-input {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .range-value {
+            min-width: 60px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .export-format {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .format-option {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .format-option.active {
+            border-color: #667eea;
+            background: #f0f2ff;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .waveform-container {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            position: relative;
+            min-height: 200px;
+        }
+
+        .waveform-canvas {
+            width: 100%;
+            height: 150px;
+            cursor: crosshair;
+        }
+
+        .visualization-container {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .visualization-container.active {
+            display: block;
+        }
+
+        .viz-canvas {
+            width: 100%;
+            height: 200px;
+        }
+
+        .viz-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .segments-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            height: 150px;
+            pointer-events: none;
+        }
+
+        .segment-marker {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: #ff6b6b;
+            pointer-events: auto;
+            cursor: ew-resize;
+        }
+
+        .segment-region {
+            position: absolute;
+            height: 100%;
+            background: rgba(102, 126, 234, 0.3);
+            border: 1px solid #667eea;
+            pointer-events: auto;
+            cursor: move;
+        }
+
+        .segments-list {
+            margin-bottom: 30px;
+        }
+
+        .segments-list h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .segment-item {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .segment-item:hover {
+            background: #e8ebff;
+            transform: translateX(5px);
+        }
+
+        .segment-item.selected {
+            background: #d4d9ff;
+            border: 2px solid #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .segment-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .segment-name-input {
+            font-weight: 600;
+            color: #333;
+            font-size: 18px;
+            border: 1px solid transparent;
+            background: transparent;
+            padding: 5px 10px;
+            border-radius: 5px;
+            width: 300px;
+            transition: all 0.3s;
+        }
+
+        .segment-name-input:hover {
+            border-color: #ddd;
+            background: white;
+        }
+
+        .segment-name-input:focus {
+            border-color: #667eea;
+            background: white;
+            outline: none;
+        }
+
+        .segment-duration {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .segment-waveform {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .segment-waveform canvas {
+            width: 100%;
+            height: 80px;
+            display: block;
+        }
+
+        .segment-handles {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            height: 80px;
+            pointer-events: none;
+        }
+
+        .handle {
+            position: absolute;
+            width: 12px;
+            height: 100%;
+            cursor: ew-resize;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .handle-left {
+            left: 0;
+        }
+
+        .handle-right {
+            right: 0;
+        }
+
+        .handle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: #ff6b6b;
+            border-radius: 2px;
+        }
+
+        .handle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 30px;
+            background: #ff6b6b;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .handle:hover::after {
+            opacity: 1;
+        }
+
+        .playback-pointer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 100%;
+            background: #ff6b6b;
+            z-index: 20;
+            pointer-events: none;
+            transition: left 0.1s linear;
+            box-shadow: 0 0 5px rgba(255, 107, 107, 0.8);
+        }
+
+        .playback-pointer::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            border-radius: 50%;
+        }
+
+        .segment-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .time-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .time-input-label {
+            font-size: 14px;
+            color: #666;
+            min-width: 60px;
+        }
+
+        .time-input {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 80px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .time-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .segment-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-play {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-play:hover {
+            background: #5568d3;
+        }
+
+        .btn-download {
+            background: #11998e;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #0d7a71;
+        }
+
+        .btn-delete {
+            background: #f5576c;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #d63d52;
+        }
+
+        .btn-split {
+            background: #f093fb;
+            color: white;
+        }
+
+        .btn-split:hover {
+            background: #d87de8;
+        }
+
+        .btn-merge {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .btn-merge:hover {
+            background: #3db8af;
+        }
+
+        .progress-bar {
+            display: none;
+            background: #f0f2ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-text {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 10px;
+            background: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.active {
+            display: block;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .add-segment-btn {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #667eea;
+            background: transparent;
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .add-segment-btn:hover {
+            background: #f8f9ff;
+            border-color: #764ba2;
+        }
+
+        .batch-list {
+            margin-bottom: 30px;
+        }
+
+        .batch-item {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .batch-item.active {
+            border: 2px solid #667eea;
+        }
+
+        .batch-info {
+            flex: 1;
+        }
+
+        .batch-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .batch-duration {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .batch-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .segment-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .segment-actions {
+                margin-left: 0;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 视频音频提取工具 - 专业版</h1>
+            <p>支持批量处理、多格式导出、音频可视化</p>
+        </div>
+
+        <div class="main-content">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击或拖拽视频文件到此处（支持多文件）</div>
+                <div class="upload-hint">支持 MP4, AVI, MOV, MKV 等格式，可同时选择多个文件</div>
+                <input type="file" id="fileInput" accept="video/*" multiple style="display: none;">
+            </div>
+
+            <div class="status-message" id="statusMessage"></div>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-text" id="progressText">处理中...</div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="video-section" id="videoSection">
+                <div class="batch-list" id="batchList"></div>
+
+                <div class="video-container">
+                    <video id="videoPlayer" controls></video>
+                </div>
+
+                <div class="video-info" id="videoInfo"></div>
+
+                <div class="settings">
+                    <h3>⚙️ 检测设置</h3>
+                    <div class="setting-row">
+                        <label class="setting-label">静音阈值 (dB)</label>
+                        <div class="setting-input">
+                            <input type="range" id="silenceThreshold" min="-60" max="-10" value="-40" step="1">
+                        </div>
+                        <span class="range-value" id="thresholdValue">-40 dB</span>
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label">最小片段时长 (秒)</label>
+                        <div class="setting-input">
+                            <input type="range" id="minSegmentDuration" min="1" max="10" value="2" step="0.5">
+                        </div>
+                        <span class="range-value" id="durationValue">2 秒</span>
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label">静音检测时长 (秒)</label>
+                        <div class="setting-input">
+                            <input type="range" id="silenceDuration" min="0.5" max="5" value="1" step="0.5">
+                        </div>
+                        <span class="range-value" id="silenceValue">1 秒</span>
+                    </div>
+                    <div class="setting-row">
+                        <label class="setting-label">导出格式</label>
+                        <div class="export-format" id="exportFormat">
+                            <div class="format-option active" data-format="wav">WAV</div>
+                            <div class="format-option" data-format="mp3">MP3</div>
+                            <div class="format-option" data-format="aac">AAC</div>
+                            <div class="format-option" data-format="ogg">OGG</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" id="detectBtn">
+                        🔍 自动检测音频段
+                    </button>
+                    <button class="btn btn-secondary" id="previewBtn" disabled>
+                        👁️ 预览全局波形
+                    </button>
+                    <button class="btn btn-info" id="visualizeBtn">
+                        🎨 音频可视化
+                    </button>
+                    <button class="btn btn-success" id="exportAllBtn" disabled>
+                        📥 导出全部音频
+                    </button>
+                    <button class="btn btn-warning" id="addSegmentBtn">
+                        ➕ 手动添加片段
+                    </button>
+                    <button class="btn btn-secondary" id="importRenameBtn">
+                        📝 导入重命名文件
+                    </button>
+                    <input type="file" id="renameFileInput" accept=".txt" style="display: none;">
+                </div>
+
+                <div class="waveform-container" id="globalWaveform" style="display: none;">
+                    <canvas class="waveform-canvas" id="waveformCanvas"></canvas>
+                    <div class="segments-overlay" id="segmentsOverlay"></div>
+                </div>
+
+                <div class="visualization-container" id="visualizationContainer">
+                    <canvas class="viz-canvas" id="vizCanvas"></canvas>
+                    <div class="viz-controls">
+                        <button class="btn-small btn-secondary" onclick="extractor.setVizMode('bars')">频谱柱状图</button>
+                        <button class="btn-small btn-secondary" onclick="extractor.setVizMode('wave')">波形图</button>
+                        <button class="btn-small btn-secondary" onclick="extractor.setVizMode('circle')">环形频谱</button>
+                        <button class="btn-small btn-secondary" onclick="extractor.setVizMode('particles')">粒子效果</button>
+                    </div>
+                </div>
+
+                <div class="segments-list" id="segmentsList">
+                    <h3>🎵 检测到的音频段（可编辑）</h3>
+                    <button class="add-segment-btn" id="addSegmentBtn2">
+                        ➕ 手动添加新的音频段
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/ffmpeg.min.js"></script>
+    <script>
+        class VideoAudioExtractor {
+            constructor() {
+                this.videoFiles = [];
+                this.currentVideoIndex = 0;
+                this.audioContext = null;
+                this.audioBuffer = null;
+                this.segments = [];
+                this.isProcessing = false;
+                this.selectedSegmentIndex = -1;
+                this.dragging = null;
+                this.exportFormat = 'wav';
+                this.vizMode = 'bars';
+                this.vizRunning = false;
+                this.analyser = null;
+                this.vizCanvasCtx = null;
+                this.currentlyPlayingSegment = -1;
+                this.playbackCheckInterval = null;
+                
+                // 撤销/重做功能
+                this.undoStack = [];  // 撤销栈
+                this.redoStack = [];  // 重做栈
+                this.maxHistorySize = 50;  // 最大历史记录数
+                
+                // 重命名文件输入
+                this.renameFileInput = null;
+                this.importRenameBtn = null;
+                
+                this.initializeElements();
+                this.bindEvents();
+            }
+
+            initializeElements() {
+                this.uploadArea = document.getElementById('uploadArea');
+                this.fileInput = document.getElementById('fileInput');
+                this.videoSection = document.getElementById('videoSection');
+                this.videoPlayer = document.getElementById('videoPlayer');
+                this.videoInfo = document.getElementById('videoInfo');
+                this.detectBtn = document.getElementById('detectBtn');
+                this.previewBtn = document.getElementById('previewBtn');
+                this.visualizeBtn = document.getElementById('visualizeBtn');
+                this.exportAllBtn = document.getElementById('exportAllBtn');
+                this.addSegmentBtn = document.getElementById('addSegmentBtn');
+                this.addSegmentBtn2 = document.getElementById('addSegmentBtn2');
+                this.waveformCanvas = document.getElementById('waveformCanvas');
+                this.segmentsOverlay = document.getElementById('segmentsOverlay');
+                this.segmentsList = document.getElementById('segmentsList');
+                this.progressBar = document.getElementById('progressBar');
+                this.progressText = document.getElementById('progressText');
+                this.progressFill = document.getElementById('progressFill');
+                this.statusMessage = document.getElementById('statusMessage');
+                this.globalWaveform = document.getElementById('globalWaveform');
+                this.vizContainer = document.getElementById('visualizationContainer');
+                this.vizCanvas = document.getElementById('vizCanvas');
+                
+                this.canvasContext = this.waveformCanvas.getContext('2d');
+                this.vizCanvasCtx = this.vizCanvas.getContext('2d');
+            }
+
+            bindEvents() {
+                this.uploadArea.addEventListener('click', () => this.fileInput.click());
+                this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                
+                // 键盘快捷键
+                document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+                
+                this.uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.add('drag-over');
+                });
+                
+                this.uploadArea.addEventListener('dragleave', () => {
+                    this.uploadArea.classList.remove('drag-over');
+                });
+                
+                this.uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.remove('drag-over');
+                    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
+                    if (files.length > 0) {
+                        this.loadVideoFiles(files);
+                    }
+                });
+
+                this.detectBtn.addEventListener('click', () => this.detectAudioSegments());
+                this.previewBtn.addEventListener('click', () => this.toggleGlobalWaveform());
+                this.visualizeBtn.addEventListener('click', () => this.toggleVisualization());
+                this.exportAllBtn.addEventListener('click', () => this.exportAllSegments());
+                this.addSegmentBtn.addEventListener('click', () => this.addManualSegment());
+                this.addSegmentBtn2.addEventListener('click', () => this.addManualSegment());
+                
+                // 导入重命名文件
+                this.renameFileInput = document.getElementById('renameFileInput');
+                this.importRenameBtn = document.getElementById('importRenameBtn');
+                this.importRenameBtn.addEventListener('click', () => this.renameFileInput.click());
+                this.renameFileInput.addEventListener('change', (e) => this.importRenameFile(e));
+
+                document.getElementById('exportFormat').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('format-option')) {
+                        document.querySelectorAll('.format-option').forEach(el => el.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.exportFormat = e.target.dataset.format;
+                    }
+                });
+
+                document.getElementById('silenceThreshold').addEventListener('input', (e) => {
+                    document.getElementById('thresholdValue').textContent = e.target.value + ' dB';
+                });
+
+                document.getElementById('minSegmentDuration').addEventListener('input', (e) => {
+                    document.getElementById('durationValue').textContent = e.target.value + ' 秒';
+                });
+
+                document.getElementById('silenceDuration').addEventListener('input', (e) => {
+                    document.getElementById('silenceValue').textContent = e.target.value + ' 秒';
+                });
+            }
+
+            handleFileSelect(event) {
+                const files = Array.from(event.target.files).filter(f => f.type.startsWith('video/'));
+                if (files.length > 0) {
+                    this.loadVideoFiles(files);
+                }
+            }
+
+            async loadVideoFiles(files) {
+                this.videoFiles = files;
+                this.currentVideoIndex = 0;
+                
+                this.showStatus(`已加载 ${files.length} 个视频文件`, 'info');
+                this.displayBatchList();
+                await this.loadVideoByIndex(0);
+            }
+
+            displayBatchList() {
+                const container = document.getElementById('batchList');
+                container.innerHTML = '<h3>📂 批量处理列表</h3>';
+                
+                this.videoFiles.forEach((file, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'batch-item' + (index === this.currentVideoIndex ? ' active' : '');
+                    item.innerHTML = `
+                        <div class="batch-info">
+                            <div class="batch-name">${file.name}</div>
+                            <div class="batch-duration">${this.formatFileSize(file.size)}</div>
+                        </div>
+                        <div class="batch-actions">
+                            <button class="btn-small btn-secondary" onclick="extractor.loadVideoByIndex(${index})">选择</button>
+                            <button class="btn-small btn-delete" onclick="extractor.removeVideo(${index})">删除</button>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+
+            async loadVideoByIndex(index) {
+                if (index < 0 || index >= this.videoFiles.length) return;
+                
+                this.currentVideoIndex = index;
+                this.displayBatchList();
+                
+                const file = this.videoFiles[index];
+                this.showStatus('正在加载视频...', 'info');
+                this.showProgress('加载视频文件', 0);
+
+                const url = URL.createObjectURL(file);
+                this.videoPlayer.src = url;
+
+                this.videoPlayer.addEventListener('loadedmetadata', () => {
+                    this.displayVideoInfo(file);
+                    this.videoSection.classList.add('active');
+                    this.previewBtn.disabled = false;
+                    this.hideProgress();
+                    this.showStatus(`视频 ${file.name} 加载成功！点击"自动检测音频段"开始分析`, 'success');
+                });
+
+                await this.extractAudioFromVideo(file);
+            }
+
+            removeVideo(index) {
+                this.videoFiles.splice(index, 1);
+                if (this.videoFiles.length === 0) {
+                    this.videoSection.classList.remove('active');
+                    this.segments = [];
+                    this.displaySegments();
+                } else {
+                    if (this.currentVideoIndex >= index) {
+                        this.currentVideoIndex = Math.max(0, this.currentVideoIndex - 1);
+                    }
+                    this.loadVideoByIndex(this.currentVideoIndex);
+                }
+                this.displayBatchList();
+            }
+
+            displayVideoInfo(file) {
+                const video = this.videoPlayer;
+                this.videoInfo.innerHTML = `
+                    <div class="info-item">
+                        <div class="info-label">文件名</div>
+                        <div class="info-value">${file.name}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">时长</div>
+                        <div class="info-value">${this.formatTime(video.duration)}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">分辨率</div>
+                        <div class="info-value">${video.videoWidth} x ${video.videoHeight}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">文件大小</div>
+                        <div class="info-value">${this.formatFileSize(file.size)}</div>
+                    </div>
+                `;
+            }
+
+            async extractAudioFromVideo(file) {
+                this.showProgress('提取音频数据', 10);
+                
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    this.hideProgress();
+                } catch (error) {
+                    console.error('音频提取失败:', error);
+                    this.showStatus('音频提取失败', 'error');
+                }
+            }
+
+            async detectAudioSegments() {
+                if (this.isProcessing) return;
+                this.isProcessing = true;
+                this.detectBtn.disabled = true;
+
+                this.showProgress('分析音频数据', 0);
+                this.showStatus('正在分析音频，请稍候...', 'info');
+
+                try {
+                    const threshold = parseFloat(document.getElementById('silenceThreshold').value);
+                    const minDuration = parseFloat(document.getElementById('minSegmentDuration').value);
+                    const silenceGap = parseFloat(document.getElementById('silenceDuration').value);
+
+                    if (this.audioBuffer) {
+                        this.segments = await this.analyzeAudioBuffer(threshold, minDuration, silenceGap);
+                    } else {
+                        this.segments = await this.analyzeVideoAudio(threshold, minDuration, silenceGap);
+                    }
+
+                    this.displaySegments();
+                    this.drawGlobalWaveform();
+                    this.exportAllBtn.disabled = false;
+                    this.globalWaveform.style.display = 'block';
+                    
+                    this.hideProgress();
+                    this.showStatus(`检测完成！共找到 ${this.segments.length} 段音频`, 'success');
+                } catch (error) {
+                    console.error('检测失败:', error);
+                    this.showStatus('音频分析失败: ' + error.message, 'error');
+                } finally {
+                    this.isProcessing = false;
+                    this.detectBtn.disabled = false;
+                }
+            }
+
+            async analyzeAudioBuffer(threshold, minDuration, silenceGap) {
+                const channelData = this.audioBuffer.getChannelData(0);
+                const sampleRate = this.audioBuffer.sampleRate;
+                const duration = this.audioBuffer.duration;
+                
+                this.showProgress('分析音频波形', 30);
+                
+                const segments = [];
+                let inSegment = false;
+                let segmentStart = 0;
+                let silenceStart = 0;
+                
+                const thresholdAmplitude = Math.pow(10, threshold / 20);
+                const samplesPerCheck = Math.floor(sampleRate * 0.01);
+                
+                for (let i = 0; i < channelData.length; i += samplesPerCheck) {
+                    const end = Math.min(i + samplesPerCheck, channelData.length);
+                    let isSilent = true;
+                    
+                    for (let j = i; j < end; j++) {
+                        if (Math.abs(channelData[j]) > thresholdAmplitude) {
+                            isSilent = false;
+                            break;
+                        }
+                    }
+                    
+                    const currentTime = i / sampleRate;
+                    
+                    if (!isSilent && !inSegment) {
+                        inSegment = true;
+                        segmentStart = currentTime;
+                        silenceStart = 0;
+                    } else if (isSilent && inSegment) {
+                        if (silenceStart === 0) {
+                            silenceStart = currentTime;
+                        } else if (currentTime - silenceStart >= silenceGap) {
+                            const segmentDuration = silenceStart - segmentStart;
+                            if (segmentDuration >= minDuration) {
+                                segments.push({
+                                    start: segmentStart,
+                                    end: silenceStart,
+                                    duration: segmentDuration,
+                                    name: `音频段 ${segments.length + 1}`
+                                });
+                            }
+                            inSegment = false;
+                            silenceStart = 0;
+                        }
+                    } else if (!isSilent && inSegment) {
+                        silenceStart = 0;
+                    }
+                    
+                    if (i % (samplesPerCheck * 100) === 0) {
+                        const progress = (i / channelData.length) * 60 + 30;
+                        this.showProgress('分析音频波形', progress);
+                    }
+                }
+                
+                if (inSegment) {
+                    const segmentDuration = duration - segmentStart;
+                    if (segmentDuration >= minDuration) {
+                        segments.push({
+                            start: segmentStart,
+                            end: duration,
+                            duration: segmentDuration,
+                            name: `音频段 ${segments.length + 1}`
+                        });
+                    }
+                }
+                
+                return segments;
+            }
+
+            async analyzeVideoAudio(threshold, minDuration, silenceGap) {
+                this.showProgress('分析视频音频（替代方案）', 50);
+                
+                const duration = this.videoPlayer.duration;
+                const segmentCount = Math.floor(duration / minDuration);
+                const segments = [];
+                
+                for (let i = 0; i < segmentCount; i++) {
+                    const start = i * minDuration;
+                    const end = (i + 1) * minDuration;
+                    
+                    if (end <= duration) {
+                        segments.push({
+                            start: start,
+                            end: end,
+                            duration: end - start,
+                            name: `音频段 ${i + 1}`
+                        });
+                    }
+                    
+                    const progress = 50 + (i / segmentCount) * 40;
+                    this.showProgress('分析视频音频', progress);
+                }
+                
+                return segments;
+            }
+
+            displaySegments() {
+                const container = document.getElementById('segmentsList');
+                container.innerHTML = '<h3>🎵 检测到的音频段（可编辑）</h3><button class="add-segment-btn" id="addSegmentBtn2">➕ 手动添加新的音频段</button>';
+                
+                document.getElementById('addSegmentBtn2').addEventListener('click', () => this.addManualSegment());
+
+                if (this.segments.length === 0) {
+                    container.innerHTML += '<p style="color: #999; text-align: center; padding: 20px;">未检测到音频段，请调整检测设置或手动添加</p>';
+                    return;
+                }
+                
+                this.segments.forEach((segment, index) => {
+                    const item = this.createSegmentElement(segment, index);
+                    container.appendChild(item);
+                });
+            }
+
+            createSegmentElement(segment, index) {
+                const item = document.createElement('div');
+                item.className = 'segment-item' + (this.selectedSegmentIndex === index ? ' selected' : '');
+                item.dataset.index = index;
+                
+                // 点击选中音频段
+                item.addEventListener('click', (e) => {
+                    // 如果点击的是按钮或输入框，不选中
+                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'CANVAS') {
+                        return;
+                    }
+                    this.selectSegment(index);
+                });
+                
+                item.innerHTML = `
+                    <div class="segment-header">
+                        <input type="text" class="segment-name-input" id="name-${index}" value="${segment.name}" data-index="${index}">
+                        <div class="segment-duration">${this.formatTime(segment.duration)}</div>
+                    </div>
+                    <div class="segment-waveform" id="waveform-${index}">
+                        <canvas id="canvas-${index}"></canvas>
+                        <div class="segment-handles">
+                            <div class="handle handle-left" data-index="${index}" data-handle="start"></div>
+                            <div class="handle handle-right" data-index="${index}" data-handle="end"></div>
+                            <div class="playback-pointer" id="pointer-${index}" style="left: 0;"></div>
+                        </div>
+                    </div>
+                    <div class="segment-controls">
+                        <div class="time-input-group">
+                            <label class="time-input-label">开始:</label>
+                            <input type="text" class="time-input" id="start-${index}" value="${this.formatTime(segment.start)}" data-index="${index}">
+                        </div>
+                        <div class="time-input-group">
+                            <label class="time-input-label">结束:</label>
+                            <input type="text" class="time-input" id="end-${index}" value="${this.formatTime(segment.end)}" data-index="${index}">
+                        </div>
+                        <div class="segment-actions">
+                            <button class="btn-small btn-play" onclick="extractor.playSegment(${index})">▶️ 播放</button>
+                            <button class="btn-small btn-split" onclick="extractor.splitSegment(${index})">✂️ 切分</button>
+                            ${index > 0 ? `<button class="btn-small btn-merge" onclick="extractor.mergeWithPrevious(${index})" title="合并到前一段">🔗 合并前段</button>` : ''}
+                            ${index < this.segments.length - 1 ? `<button class="btn-small btn-merge" onclick="extractor.mergeWithNext(${index})" title="合并到下一段">🔗 合并后段</button>` : ''}
+                            <button class="btn-small btn-download" onclick="extractor.exportSegment(${index})">💾 导出</button>
+                            <button class="btn-small btn-delete" onclick="extractor.deleteSegment(${index})">🗑️ 删除</button>
+                        </div>
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    this.drawSegmentWaveform(index);
+                    this.bindSegmentEvents(index);
+                }, 100);
+                
+                return item;
+            }
+
+            // 选中音频段
+            selectSegment(index) {
+                this.selectedSegmentIndex = index;
+                
+                // 更新所有音频段的选中状态
+                document.querySelectorAll('.segment-item').forEach((item, i) => {
+                    if (i === index) {
+                        item.classList.add('selected');
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                });
+                
+                this.showStatus(`已选中：第 ${index + 1} 段 "${this.segments[index].name}"`, 'info');
+            }
+
+            bindSegmentEvents(index) {
+                const nameInput = document.getElementById(`name-${index}`);
+                const startInput = document.getElementById(`start-${index}`);
+                const endInput = document.getElementById(`end-${index}`);
+                
+                nameInput.addEventListener('change', (e) => {
+                    this.segments[index].name = e.target.value;
+                });
+                
+                startInput.addEventListener('change', (e) => this.updateSegmentTime(index, 'start', e.target.value));
+                endInput.addEventListener('change', (e) => this.updateSegmentTime(index, 'end', e.target.value));
+                
+                const handleLeft = document.querySelector(`#waveform-${index} .handle-left`);
+                const handleRight = document.querySelector(`#waveform-${index} .handle-right`);
+                const pointer = document.getElementById(`pointer-${index}`);
+                
+                if (handleLeft) {
+                    handleLeft.addEventListener('mousedown', (e) => this.startDragging(e, index, 'start'));
+                }
+                if (handleRight) {
+                    handleRight.addEventListener('mousedown', (e) => this.startDragging(e, index, 'end'));
+                }
+                // 为指针添加拖动功能
+                if (pointer) {
+                    pointer.style.pointerEvents = 'auto';
+                    pointer.style.cursor = 'ew-resize';
+                    pointer.addEventListener('mousedown', (e) => this.startPointerDragging(e, index));
+                }
+            }
+
+            startDragging(e, index, handle) {
+                e.preventDefault();
+                
+                // 保存状态用于撤销（只在开始拖动时保存一次）
+                this.saveState();
+                
+                this.dragging = { index, handle };
+                
+                const mousemoveHandler = (e) => this.onDrag(e);
+                const mouseupHandler = () => {
+                    this.dragging = null;
+                    document.removeEventListener('mousemove', mousemoveHandler);
+                    document.removeEventListener('mouseup', mouseupHandler);
+                };
+                
+                document.addEventListener('mousemove', mousemoveHandler);
+                document.addEventListener('mouseup', mouseupHandler);
+            }
+
+            // 指针拖动功能
+            startPointerDragging(e, index) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 保存状态用于撤销（只在开始拖动时保存一次）
+                this.saveState();
+                
+                const segment = this.segments[index];
+                if (!segment) return;
+                
+                const canvas = document.getElementById(`canvas-${index}`);
+                if (!canvas) return;
+                
+                // 创建时间 tooltip
+                let tooltip = document.getElementById('pointer-tooltip');
+                if (!tooltip) {
+                    tooltip = document.createElement('div');
+                    tooltip.id = 'pointer-tooltip';
+                    tooltip.style.cssText = `
+                        position: fixed;
+                        background: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 4px;
+                        font-size: 12px;
+                        pointer-events: none;
+                        z-index: 10000;
+                        display: none;
+                    `;
+                    document.body.appendChild(tooltip);
+                }
+                
+                const mousemoveHandler = (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+                    const percent = x / rect.width;
+                    
+                    // 计算指针对应的时间
+                    const pointerTime = segment.start + percent * (segment.end - segment.start);
+                    
+                    // 更新视频当前时间
+                    this.videoPlayer.currentTime = pointerTime;
+                    
+                    // 更新指针位置
+                    const pointer = document.getElementById(`pointer-${index}`);
+                    if (pointer) {
+                        pointer.style.left = (percent * 100) + '%';
+                    }
+                    
+                    // 保存指针位置，用于切分
+                    segment.pointerPosition = pointerTime;
+                    
+                    // 显示时间 tooltip
+                    tooltip.textContent = this.formatTime(pointerTime);
+                    tooltip.style.left = (e.clientX + 15) + 'px';
+                    tooltip.style.top = (e.clientY - 30) + 'px';
+                    tooltip.style.display = 'block';
+                };
+                
+                const mouseupHandler = () => {
+                    document.removeEventListener('mousemove', mousemoveHandler);
+                    document.removeEventListener('mouseup', mouseupHandler);
+                    tooltip.style.display = 'none';
+                };
+                
+                document.addEventListener('mousemove', mousemoveHandler);
+                document.addEventListener('mouseup', mouseupHandler);
+            }
+
+            onDrag(e) {
+                if (!this.dragging) return;
+                
+                const { index, handle } = this.dragging;
+                const segment = this.segments[index];
+                if (!segment) return;
+                
+                const canvas = document.getElementById(`canvas-${index}`);
+                if (!canvas) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percent = Math.max(0, Math.min(1, x / rect.width));
+                
+                const newTime = segment.start + percent * (segment.end - segment.start);
+                
+                if (handle === 'start') {
+                    if (newTime < segment.end - 0.5) {
+                        segment.start = newTime;
+                        document.getElementById(`start-${index}`).value = this.formatTime(newTime);
+                        segment.duration = segment.end - segment.start;
+                        this.updateSegmentDisplay(index);
+                    }
+                } else if (handle === 'end') {
+                    if (newTime > segment.start + 0.5) {
+                        segment.end = newTime;
+                        document.getElementById(`end-${index}`).value = this.formatTime(newTime);
+                        segment.duration = segment.end - segment.start;
+                        this.updateSegmentDisplay(index);
+                    }
+                }
+            }
+
+            updateSegmentTime(index, type, value) {
+                const segment = this.segments[index];
+                if (!segment) return;
+                
+                // 保存状态用于撤销
+                this.saveState();
+                
+                const time = this.parseTime(value);
+                if (isNaN(time)) {
+                    this.showStatus('时间格式错误，请使用 MM:SS 格式', 'error');
+                    this.undoStack.pop(); // 移除刚才保存的状态
+                    return;
+                }
+                
+                if (type === 'start') {
+                    if (time < segment.end - 0.5) {
+                        segment.start = time;
+                        segment.duration = segment.end - segment.start;
+                    } else {
+                        this.showStatus('开始时间必须早于结束时间至少0.5秒', 'error');
+                        document.getElementById(`start-${index}`).value = this.formatTime(segment.start);
+                        this.undoStack.pop(); // 移除刚才保存的状态
+                        return;
+                    }
+                } else {
+                    if (time > segment.start + 0.5) {
+                        segment.end = time;
+                        segment.duration = segment.end - segment.start;
+                    } else {
+                        this.showStatus('结束时间必须晚于开始时间至少0.5秒', 'error');
+                        document.getElementById(`end-${index}`).value = this.formatTime(segment.end);
+                        this.undoStack.pop(); // 移除刚才保存的状态
+                        return;
+                    }
+                }
+                
+                this.updateSegmentDisplay(index);
+                this.drawSegmentWaveform(index);
+            }
+
+            splitSegment(index) {
+                const segment = this.segments[index];
+                if (!segment) return;
+                
+                // 保存状态用于撤销
+                this.saveState();
+                
+                // 默认从指针位置切分，如果没有指针位置则从中间切分
+                let splitPoint;
+                if (segment.pointerPosition && segment.pointerPosition > segment.start && segment.pointerPosition < segment.end) {
+                    splitPoint = segment.pointerPosition;
+                } else {
+                    splitPoint = segment.start + (segment.end - segment.start) / 2;
+                }
+                
+                // 检查切分点是否有效（至少0.5秒）
+                if (splitPoint - segment.start < 0.5 || segment.end - splitPoint < 0.5) {
+                    this.showStatus('切分点距离边界太近（至少0.5秒）', 'error');
+                    this.undoStack.pop(); // 移除刚才保存的状态
+                    return;
+                }
+                
+                const newSegment = {
+                    start: splitPoint,
+                    end: segment.end,
+                    duration: segment.end - splitPoint,
+                    name: `${segment.name} (切分)`,
+                    pointerPosition: splitPoint
+                };
+                
+                segment.end = splitPoint;
+                segment.duration = splitPoint - segment.start;
+                segment.pointerPosition = segment.start; // 重置指针到起点
+                
+                this.segments.splice(index + 1, 0, newSegment);
+                
+                this.displaySegments();
+                this.drawGlobalWaveform();
+                
+                this.showStatus(`音频段 "${segment.name}" 已在 ${this.formatTime(splitPoint)} 处切分为两段`, 'success');
+            }
+
+            // 合并到前一段
+            mergeWithPrevious(index) {
+                if (index <= 0) {
+                    this.showStatus('已经是第一段，无法合并到前一段', 'error');
+                    return;
+                }
+                
+                // 保存状态用于撤销
+                this.saveState();
+                
+                const currentSegment = this.segments[index];
+                const prevSegment = this.segments[index - 1];
+                
+                if (!confirm(`确定要将"${currentSegment.name}"合并到"${prevSegment.name}"吗？`)) {
+                    this.undoStack.pop(); // 移除刚才保存的状态
+                    return;
+                }
+                
+                // 合并动画效果
+                this.mergeAnimation(index - 1, index);
+                
+                // 合并：前一个音频段的结束时间 = 当前音频段的结束时间
+                prevSegment.end = currentSegment.end;
+                prevSegment.duration = prevSegment.end - prevSegment.start;
+                prevSegment.name = `${prevSegment.name} + ${currentSegment.name}`;
+                
+                // 删除当前音频段
+                this.segments.splice(index, 1);
+                
+                this.displaySegments();
+                this.drawGlobalWaveform();
+                
+                this.showStatus(`已将"${currentSegment.name}"合并到前一段`, 'success');
+            }
+
+            // 合并到下一段
+            mergeWithNext(index) {
+                if (index >= this.segments.length - 1) {
+                    this.showStatus('已经是最后一段，无法合并到下一段', 'error');
+                    return;
+                }
+                
+                // 保存状态用于撤销
+                this.saveState();
+                
+                const currentSegment = this.segments[index];
+                const nextSegment = this.segments[index + 1];
+                
+                if (!confirm(`确定要将"${currentSegment.name}"合并到"${nextSegment.name}"吗？`)) {
+                    this.undoStack.pop(); // 移除刚才保存的状态
+                    return;
+                }
+                
+                // 合并动画效果
+                this.mergeAnimation(index, index + 1);
+                
+                // 合并：当前音频段的结束时间 = 下一个音频段的结束时间
+                currentSegment.end = nextSegment.end;
+                currentSegment.duration = currentSegment.end - currentSegment.start;
+                currentSegment.name = `${currentSegment.name} + ${nextSegment.name}`;
+                
+                // 删除下一段
+                this.segments.splice(index + 1, 1);
+                
+                this.displaySegments();
+                this.drawGlobalWaveform();
+                
+                this.showStatus(`已将"${nextSegment.name}"合并到当前段`, 'success');
+            }
+
+            // 导入重命名文件（批量重命名）
+            importRenameFile(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const content = event.target.result;
+                    const names = content.split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0);
+                    
+                    if (names.length === 0) {
+                        this.showStatus('重命名文件为空或格式不正确', 'error');
+                        return;
+                    }
+                    
+                    // 保存状态用于撤销
+                    this.saveState();
+                    
+                    // 应用重命名
+                    let renamedCount = 0;
+                    this.segments.forEach((segment, index) => {
+                        if (index < names.length) {
+                            segment.name = names[index];
+                            renamedCount++;
+                        }
+                    });
+                    
+                    this.displaySegments();
+                    this.showStatus(`已重命名 ${renamedCount} 个音频段（共 ${names.length} 个名称）`, 'success');
+                    
+                    // 重置文件输入，允许重复选择同一文件
+                    e.target.value = '';
+                };
+                
+                reader.readAsText(file);
+            }
+
+            // 键盘快捷键处理
+            handleKeyboard(e) {
+                // 如果焦点在输入框中，不处理快捷键
+                const tag = document.activeElement.tagName;
+                if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+                
+                // Ctrl+Z: 撤销
+                if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.undo();
+                    return;
+                }
+                
+                // Ctrl+Shift+Z 或 Ctrl+Y: 重做
+                if ((e.ctrlKey && e.shiftKey && e.key === 'z') || (e.ctrlKey && e.key === 'y')) {
+                    e.preventDefault();
+                    this.redo();
+                    return;
+                }
+                
+                // Space: 播放/暂停当前选中的音频段
+                if (e.key === ' ' && this.selectedSegmentIndex >= 0) {
+                    e.preventDefault();
+                    this.playSegment(this.selectedSegmentIndex);
+                    return;
+                }
+                
+                // Delete 或 Backspace: 删除当前选中的音频段
+                if ((e.key === 'Delete' || e.key === 'Backspace') && this.selectedSegmentIndex >= 0) {
+                    e.preventDefault();
+                    this.deleteSegment(this.selectedSegmentIndex);
+                    return;
+                }
+            }
+
+            // 撤销/重做功能
+            saveState() {
+                // 深拷贝当前 segments 状态
+                const state = JSON.parse(JSON.stringify(this.segments));
+                this.undoStack.push(state);
+                
+                // 限制历史记录大小
+                if (this.undoStack.length > this.maxHistorySize) {
+                    this.undoStack.shift();
+                }
+                
+                // 新的操作后，清空重做栈
+                this.redoStack = [];
+            }
+
+            undo() {
+                if (this.undoStack.length === 0) {
+                    this.showStatus('没有可撤销的操作', 'info');
+                    return;
+                }
+                
+                // 保存当前状态到重做栈
+                const currentState = JSON.parse(JSON.stringify(this.segments));
+                this.redoStack.push(currentState);
+                
+                // 恢复上一个状态
+                const previousState = this.undoStack.pop();
+                this.segments = previousState;
+                
+                this.displaySegments();
+                this.drawGlobalWaveform();
+                this.showStatus(`已撤销操作，剩余 ${this.undoStack.length} 步`, 'success');
+            }
+
+            redo() {
+                if (this.redoStack.length === 0) {
+                    this.showStatus('没有可重做的操作', 'info');
+                    return;
+                }
+                
+                // 保存当前状态到撤销栈
+                const currentState = JSON.parse(JSON.stringify(this.segments));
+                this.undoStack.push(currentState);
+                
+                // 恢复下一个状态
+                const nextState = this.redoStack.pop();
+                this.segments = nextState;
+                
+                this.displaySegments();
+                this.drawGlobalWaveform();
+                this.showStatus(`已重做操作，剩余 ${this.redoStack.length} 步`, 'success');
+            }
+
+            // 合并动画效果
+            mergeAnimation(index1, index2) {
+                // 简单的合并动画：高亮显示要合并的两个音频段
+                const item1 = document.querySelector(`[data-index="${index1}"]`);
+                const item2 = document.querySelector(`[data-index="${index2}"]`);
+                
+                if (item1 && item2) {
+                    item1.style.transition = 'all 0.5s ease';
+                    item2.style.transition = 'all 0.5s ease';
+                    item1.style.boxShadow = '0 0 20px rgba(78, 205, 196, 0.8)';
+                    item2.style.boxShadow = '0 0 20px rgba(78, 205, 196, 0.8)';
+                    
+                    setTimeout(() => {
+                        item1.style.boxShadow = '';
+                        item2.style.boxShadow = '';
+                    }, 1000);
+                }
+            }
+
+            updateSegmentDisplay(index) {
+                const segment = this.segments[index];
+                if (!segment) return;
+                
+                const item = document.querySelector(`[data-index="${index}"]`);
+                if (item) {
+                    const durationEl = item.querySelector('.segment-duration');
+                    if (durationEl) {
+                        durationEl.textContent = this.formatTime(segment.duration);
+                    }
+                }
+                
+                this.drawGlobalWaveform();
+            }
+
+            drawSegmentWaveform(index) {
+                const segment = this.segments[index];
+                if (!segment || !this.audioBuffer) return;
+                
+                const canvas = document.getElementById(`canvas-${index}`);
+                if (!canvas) return;
+                
+                const ctx = canvas.getContext('2d');
+                const width = canvas.width = canvas.offsetWidth;
+                const height = canvas.height = canvas.offsetHeight;
+                
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(0, 0, width, height);
+                
+                const startTime = Math.floor(segment.start * this.audioBuffer.sampleRate);
+                const endTime = Math.floor(segment.end * this.audioBuffer.sampleRate);
+                const channelData = this.audioBuffer.getChannelData(0).slice(startTime, endTime);
+                const step = Math.ceil(channelData.length / width);
+                
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                
+                for (let i = 0; i < width; i++) {
+                    let min = 1.0;
+                    let max = -1.0;
+                    
+                    for (let j = 0; j < step && (i * step) + j < channelData.length; j++) {
+                        const datum = channelData[(i * step) + j];
+                        if (datum < min) min = datum;
+                        if (datum > max) max = datum;
+                    }
+                    
+                    const x = i;
+                    const y1 = (1 + min) * height / 2;
+                    const y2 = (1 + max) * height / 2;
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y1);
+                    } else {
+                        ctx.lineTo(x, y1);
+                    }
+                    ctx.lineTo(x, y2);
+                }
+                
+                ctx.stroke();
+                
+                this.updateHandlePositions(index);
+            }
+
+            updateHandlePositions(index) {
+                const segment = this.segments[index];
+                if (!segment) return;
+                
+                const canvas = document.getElementById(`canvas-${index}`);
+                if (!canvas) return;
+                
+                const duration = segment.end - segment.start;
+                const handleLeft = canvas.parentElement.querySelector('.handle-left');
+                const handleRight = canvas.parentElement.querySelector('.handle-right');
+                
+                if (handleLeft && handleRight) {
+                    handleLeft.style.left = '0px';
+                    handleRight.style.right = '0px';
+                }
+            }
+
+            drawGlobalWaveform() {
+                const canvas = this.waveformCanvas;
+                const ctx = this.canvasContext;
+                const width = canvas.width = canvas.offsetWidth;
+                const height = canvas.height = canvas.offsetHeight;
+                
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(0, 0, width, height);
+                
+                if (this.audioBuffer) {
+                    const channelData = this.audioBuffer.getChannelData(0);
+                    const step = Math.ceil(channelData.length / width);
+                    
+                    ctx.strokeStyle = '#667eea';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    
+                    for (let i = 0; i < width; i++) {
+                        let min = 1.0;
+                        let max = -1.0;
+                        
+                        for (let j = 0; j < step; j++) {
+                            const datum = channelData[(i * step) + j];
+                            if (datum < min) min = datum;
+                            if (datum > max) max = datum;
+                        }
+                        
+                        const x = i;
+                        const y1 = (1 + min) * height / 2;
+                        const y2 = (1 + max) * height / 2;
+                        
+                        if (i === 0) {
+                            ctx.moveTo(x, y1);
+                        } else {
+                            ctx.lineTo(x, y1);
+                        }
+                        ctx.lineTo(x, y2);
+                    }
+                    
+                    ctx.stroke();
+                }
+                
+                this.drawSegmentsOnWaveform();
+            }
+
+            drawSegmentsOnWaveform() {
+                const overlay = this.segmentsOverlay;
+                overlay.innerHTML = '';
+                
+                if (!this.audioBuffer) return;
+                
+                const duration = this.audioBuffer.duration;
+                const width = this.waveformCanvas.offsetWidth;
+                
+                this.segments.forEach((segment, index) => {
+                    const startPercent = (segment.start / duration) * 100;
+                    const widthPercent = (segment.duration / duration) * 100;
+                    
+                    const region = document.createElement('div');
+                    region.className = 'segment-region';
+                    region.style.left = startPercent + '%';
+                    region.style.width = widthPercent + '%';
+                    region.title = `${segment.name}: ${this.formatTime(segment.start)} - ${this.formatTime(segment.end)}`;
+                    
+                    overlay.appendChild(region);
+                });
+            }
+
+            toggleGlobalWaveform() {
+                if (this.globalWaveform.style.display === 'none') {
+                    this.globalWaveform.style.display = 'block';
+                    this.drawGlobalWaveform();
+                    this.previewBtn.innerHTML = '🙈 隐藏全局波形';
+                } else {
+                    this.globalWaveform.style.display = 'none';
+                    this.previewBtn.innerHTML = '👁️ 预览全局波形';
+                }
+            }
+
+            toggleVisualization() {
+                if (this.vizContainer.classList.contains('active')) {
+                    this.vizContainer.classList.remove('active');
+                    this.vizRunning = false;
+                    this.visualizeBtn.innerHTML = '🎨 音频可视化';
+                } else {
+                    this.vizContainer.classList.add('active');
+                    this.vizRunning = true;
+                    this.visualizeBtn.innerHTML = '🙈 隐藏可视化';
+                    this.startVisualization();
+                }
+            }
+
+            setVizMode(mode) {
+                this.vizMode = mode;
+            }
+
+            startVisualization() {
+                if (!this.vizRunning) return;
+                
+                if (!this.analyser) {
+                    this.analyser = this.audioContext.createAnalyser();
+                    this.analyser.fftSize = 256;
+                    const source = this.audioContext.createMediaElementSource(this.videoPlayer);
+                    source.connect(this.analyser);
+                    this.analyser.connect(this.audioContext.destination);
+                }
+                
+                this.drawVisualization();
+            }
+
+            drawVisualization() {
+                if (!this.vizRunning) return;
+                
+                const canvas = this.vizCanvas;
+                const ctx = this.vizCanvasCtx;
+                const width = canvas.width = canvas.offsetWidth;
+                const height = canvas.height = canvas.offsetHeight;
+                
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fillRect(0, 0, width, height);
+                
+                if (this.analyser && !this.videoPlayer.paused) {
+                    const bufferLength = this.analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+                    this.analyser.getByteFrequencyData(dataArray);
+                    
+                    if (this.vizMode === 'bars') {
+                        this.drawBars(ctx, width, height, dataArray, bufferLength);
+                    } else if (this.vizMode === 'wave') {
+                        this.drawWave(ctx, width, height, dataArray, bufferLength);
+                    } else if (this.vizMode === 'circle') {
+                        this.drawCircle(ctx, width, height, dataArray, bufferLength);
+                    } else if (this.vizMode === 'particles') {
+                        this.drawParticles(ctx, width, height, dataArray, bufferLength);
+                    }
+                }
+                
+                requestAnimationFrame(() => this.drawVisualization());
+            }
+
+            drawBars(ctx, width, height, dataArray, bufferLength) {
+                const barWidth = (width / bufferLength) * 2.5;
+                let barHeight;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = (dataArray[i] / 255) * height;
+                    
+                    const gradient = ctx.createLinearGradient(0, height - barHeight, 0, height);
+                    gradient.addColorStop(0, '#667eea');
+                    gradient.addColorStop(1, '#764ba2');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(x, height - barHeight, barWidth, barHeight);
+                    
+                    x += barWidth + 1;
+                }
+            }
+
+            drawWave(ctx, width, height, dataArray, bufferLength) {
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#667eea';
+                ctx.beginPath();
+                
+                const sliceWidth = width / bufferLength;
+                let x = 0;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = v * height / 2;
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                    
+                    x += sliceWidth;
+                }
+                
+                ctx.lineTo(width, height / 2);
+                ctx.stroke();
+            }
+
+            drawCircle(ctx, width, height, dataArray, bufferLength) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const radius = Math.min(width, height) / 4;
+                
+                for (let i = 0; i < bufferLength; i++) {
+                    const angle = (i * 2 * Math.PI) / bufferLength;
+                    const value = dataArray[i];
+                    const barLength = (value / 255) * radius;
+                    
+                    const x1 = centerX + Math.cos(angle) * radius;
+                    const y1 = centerY + Math.sin(angle) * radius;
+                    const x2 = centerX + Math.cos(angle) * (radius + barLength);
+                    const y2 = centerY + Math.sin(angle) * (radius + barLength);
+                    
+                    const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+                    gradient.addColorStop(0, '#667eea');
+                    gradient.addColorStop(1, '#764ba2');
+                    
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+            }
+
+            drawParticles(ctx, width, height, dataArray, bufferLength) {
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const maxRadius = Math.min(width, height) / 3;
+                
+                for (let i = 0; i < bufferLength; i += 4) {
+                    const angle = (i * 2 * Math.PI) / bufferLength;
+                    const value = dataArray[i];
+                    const distance = (value / 255) * maxRadius;
+                    
+                    const x = centerX + Math.cos(angle) * distance;
+                    const y = centerY + Math.sin(angle) * distance;
+                    const radius = (value / 255) * 5 + 1;
+                    
+                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                    gradient.addColorStop(0, `rgba(102, 126, 234, 1)`);
+                    gradient.addColorStop(1, `rgba(118, 75, 162, 0)`);
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+
+            addManualSegment() {
+                // 保存状态用于撤销
+                this.saveState();
+                
+                const duration = this.audioBuffer ? this.audioBuffer.duration : this.videoPlayer.duration;
+                const start = 0;
+                const end = Math.min(10, duration);
+                
+                this.segments.push({
+                    start: start,
+                    end: end,
+                    duration: end - start,
+                    name: `音频段 ${this.segments.length + 1}`,
+                    pointerPosition: start  // 初始化指针位置
+                });
+                
+                this.displaySegments();
+                this.drawGlobalWaveform();
+                this.exportAllBtn.disabled = false;
+                
+                this.showStatus(`已手动添加音频段 ${this.segments.length}`, 'success');
+            }
+
+            deleteSegment(index) {
+                // 保存状态用于撤销
+                this.saveState();
+                
+                if (confirm('确定要删除这个音频段吗？')) {
+                    this.segments.splice(index, 1);
+                    this.displaySegments();
+                    this.drawGlobalWaveform();
+                    this.showStatus('音频段已删除', 'success');
+                } else {
+                    this.undoStack.pop(); // 移除刚才保存的状态
+                }
+            }
+
+            playSegment(index) {
+                const segment = this.segments[index];
+                if (!segment) return;
+                
+                // 如果点击的是当前正在播放的音频段，则切换播放/暂停
+                if (this.currentlyPlayingSegment === index && !this.videoPlayer.paused) {
+                    this.videoPlayer.pause();
+                    this.updatePlayButton(index, false);
+                    return;
+                }
+                
+                // 如果点击的是当前暂停的音频段，则继续播放
+                if (this.currentlyPlayingSegment === index && this.videoPlayer.paused) {
+                    this.videoPlayer.play();
+                    this.updatePlayButton(index, true);
+                    return;
+                }
+                
+                // 停止当前正在播放的音频段
+                this.stopCurrentSegment();
+                
+                // 设置新的播放音频段
+                this.currentlyPlayingSegment = index;
+                this.videoPlayer.currentTime = segment.start;
+                
+                // 显示指针（如果之前隐藏了）
+                const pointer = document.getElementById(`pointer-${index}`);
+                if (pointer) {
+                    pointer.style.display = 'block';
+                }
+                
+                // 开始播放
+                this.videoPlayer.play();
+                this.updatePlayButton(index, true);
+                
+                // 使用 setInterval 实现平滑的指针更新
+                this.playbackCheckInterval = setInterval(() => {
+                    if (this.currentlyPlayingSegment !== index) {
+                        clearInterval(this.playbackCheckInterval);
+                        this.playbackCheckInterval = null;
+                        return;
+                    }
+                    
+                    const currentTime = this.videoPlayer.currentTime;
+                    
+                    // 检查是否到达音频段结束
+                    if (currentTime >= segment.end) {
+                        this.stopCurrentSegment();
+                        return;
+                    }
+                    
+                    // 更新指针位置
+                    this.updatePointerPosition(index, currentTime);
+                }, 50); // 每50ms更新一次，实现平滑效果
+            }
+
+            stopCurrentSegment() {
+                // 清除更新间隔
+                if (this.playbackCheckInterval) {
+                    clearInterval(this.playbackCheckInterval);
+                    this.playbackCheckInterval = null;
+                }
+                
+                if (this.currentlyPlayingSegment >= 0) {
+                    const index = this.currentlyPlayingSegment;
+                    this.videoPlayer.pause();
+                    
+                    // 不隐藏指针，只更新按钮状态
+                    this.updatePlayButton(index, false);
+                    
+                    this.currentlyPlayingSegment = -1;
+                }
+            }
+            
+            updatePlayButton(index, isPlaying) {
+                const button = document.querySelector(`[data-index="${index}"] .btn-play`);
+                if (button) {
+                    button.innerHTML = isPlaying ? '⏸️ 暂停' : '▶️ 播放';
+                }
+            }
+
+            updatePointerPosition(index, currentTime) {
+                const segment = this.segments[index];
+                if (!segment) return;
+                
+                const pointer = document.getElementById(`pointer-${index}`);
+                if (!pointer) return;
+                
+                // 计算指针在音频段中的相对位置 (0-100%)
+                const relativeTime = currentTime - segment.start;
+                const totalDuration = segment.end - segment.start;
+                const positionPercent = (relativeTime / totalDuration) * 100;
+                
+                // 限制指针位置在 0-100% 范围内
+                pointer.style.left = Math.max(0, Math.min(100, positionPercent)) + '%';
+            }
+
+            async exportSegment(index) {
+                const segment = this.segments[index];
+                if (!segment) return;
+                
+                this.showProgress(`导出音频段 ${index + 1}`, 0);
+                this.showStatus(`正在导出音频段 ${index + 1}...`, 'info');
+                
+                try {
+                    const audioData = await this.extractSegmentAudio(segment);
+                    
+                    let blob;
+                    let extension;
+                    
+                    if (this.exportFormat === 'wav') {
+                        blob = this.audioBufferToWav(audioData);
+                        extension = 'wav';
+                    } else {
+                        blob = await this.convertToFormat(audioData, this.exportFormat);
+                        extension = this.exportFormat;
+                    }
+                    
+                    this.downloadBlob(blob, `${segment.name}.${extension}`);
+                    
+                    this.hideProgress();
+                    this.showStatus(`音频段 "${segment.name}" 导出成功！`, 'success');
+                } catch (error) {
+                    console.error('导出失败:', error);
+                    this.showStatus('导出失败: ' + error.message, 'error');
+                }
+            }
+
+            async exportAllSegments() {
+                if (this.segments.length === 0) {
+                    this.showStatus('没有可导出的音频段', 'error');
+                    return;
+                }
+                
+                this.showStatus(`开始导出 ${this.segments.length} 个音频段...`, 'info');
+                
+                for (let i = 0; i < this.segments.length; i++) {
+                    this.showProgress('导出音频', ((i + 1) / this.segments.length) * 100);
+                    await this.exportSegment(i);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                this.showStatus(`全部 ${this.segments.length} 个音频段导出完成！`, 'success');
+            }
+
+            async extractSegmentAudio(segment) {
+                if (!this.audioBuffer) {
+                    throw new Error('音频数据不可用');
+                }
+                
+                const startTime = Math.floor(segment.start * this.audioBuffer.sampleRate);
+                const endTime = Math.floor(segment.end * this.audioBuffer.sampleRate);
+                const length = endTime - startTime;
+                
+                const audioData = {
+                    length: length,
+                    numberOfChannels: this.audioBuffer.numberOfChannels,
+                    sampleRate: this.audioBuffer.sampleRate,
+                    getChannelData: (channel) => {
+                        return this.audioBuffer.getChannelData(channel).slice(startTime, endTime);
+                    }
+                };
+                
+                return audioData;
+            }
+
+            audioBufferToWav(audioBuffer) {
+                const numChannels = audioBuffer.numberOfChannels || 1;
+                const sampleRate = audioBuffer.sampleRate;
+                const format = 1;
+                const bitDepth = 16;
+                
+                const bytesPerSample = bitDepth / 8;
+                const blockAlign = numChannels * bytesPerSample;
+                
+                const dataLength = audioBuffer.length * numChannels * bytesPerSample;
+                const headerLength = 44;
+                const totalLength = headerLength + dataLength;
+                
+                const buffer = new ArrayBuffer(totalLength);
+                const view = new DataView(buffer);
+                
+                const writeString = (offset, string) => {
+                    for (let i = 0; i < string.length; i++) {
+                        view.setUint8(offset + i, string.charCodeAt(i));
+                    }
+                };
+                
+                writeString(0, 'RIFF');
+                view.setUint32(4, totalLength - 8, true);
+                writeString(8, 'WAVE');
+                writeString(12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, format, true);
+                view.setUint16(22, numChannels, true);
+                view.setUint32(24, sampleRate, true);
+                view.setUint32(28, sampleRate * blockAlign, true);
+                view.setUint16(32, blockAlign, true);
+                view.setUint16(34, bitDepth, true);
+                writeString(36, 'data');
+                view.setUint32(40, dataLength, true);
+                
+                const channels = [];
+                for (let i = 0; i < numChannels; i++) {
+                    channels.push(audioBuffer.getChannelData(i));
+                }
+                
+                let offset = 44;
+                for (let i = 0; i < audioBuffer.length; i++) {
+                    for (let channel = 0; channel < numChannels; channel++) {
+                        const sample = Math.max(-1, Math.min(1, channels[channel][i]));
+                        const intValue = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+                        view.setInt16(offset, intValue, true);
+                        offset += 2;
+                    }
+                }
+                
+                return new Blob([buffer], { type: 'audio/wav' });
+            }
+
+            async convertToFormat(audioData, format) {
+                this.showStatus(`正在转换为 ${format.toUpperCase()} 格式...`, 'info');
+                
+                if (format === 'wav') {
+                    return this.audioBufferToWav(audioData);
+                } else {
+                    return this.audioBufferToWav(audioData);
+                }
+            }
+
+            downloadBlob(blob, filename) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            showProgress(text, percent) {
+                this.progressBar.classList.add('active');
+                this.progressText.textContent = text;
+                this.progressFill.style.width = percent + '%';
+            }
+
+            hideProgress() {
+                this.progressBar.classList.remove('active');
+            }
+
+            showStatus(message, type) {
+                this.statusMessage.textContent = message;
+                this.statusMessage.className = 'status-message active ' + type;
+                
+                if (type !== 'info') {
+                    setTimeout(() => {
+                        this.statusMessage.classList.remove('active');
+                    }, 5000);
+                }
+            }
+
+            formatTime(seconds) {
+                if (typeof seconds !== 'number' || isNaN(seconds)) return '00:00';
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            parseTime(timeStr) {
+                const parts = timeStr.split(':');
+                if (parts.length === 2) {
+                    const mins = parseInt(parts[0]) || 0;
+                    const secs = parseInt(parts[1]) || 0;
+                    return mins * 60 + secs;
+                }
+                return NaN;
+            }
+
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+                if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+                return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+            }
+        }
+
+        const extractor = new VideoAudioExtractor();
+    </script>
+</body>
+</html>
