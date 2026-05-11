@@ -1,6 +1,6 @@
-# 视频音频提取工具 - 专业版
+# 视频音频提取工具
 
-> Video Audio Extractor Pro — 基于浏览器的视频音频提取与分段处理工具
+> Video Audio Extractor — 基于浏览器的视频音频提取与分段处理工具
 
 ## 简介
 
